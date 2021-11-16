@@ -1,0 +1,6 @@
+open
+close
+last
+index
+dynamic
+background
