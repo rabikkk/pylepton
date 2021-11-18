@@ -8,7 +8,7 @@ import numpy as np
 import time
 from compare import capture 
 path='alex.txt'
-model_path="models/lenet/model.tflite"
+model_path="models/lenet/model4.tflite"
 
 def load_labels(path):
   """Loads the labels file. Supports files with or without index numbers."""
@@ -43,34 +43,36 @@ def classify_image(interpreter, image, top_k=1):
   ordered = np.argpartition(-output, top_k)
   return [(i, output[i]) for i in ordered[:top_k]]
 
-def main(image):
-  labels = load_labels(path)
-  interpreter = tf.lite.Interpreter(model_path)
-  interpreter.allocate_tensors()
-  _, height, width, _ = interpreter.get_input_details()[0]['shape']
-  results = classify_image(interpreter, image)
-  label_id, prob = results[0]
-  cv2.imshow('Pi Feed',image)
-
-  if cv2.waitKey(10) & 0xFF ==ord('q'):
-    cap.release()
-    cv2.destroyAllWindows()
-
 
 labels = load_labels(path)
 interpreter = tf.lite.Interpreter(model_path)
 interpreter.allocate_tensors()
 _, height, width, _ = interpreter.get_input_details()[0]['shape']
 while True:
-  start_time = time.time() # start time of the loop
   image=capture()
   try:
     if image.shape!=None:
       results = classify_image(interpreter, image)
       label_id, prob = results[0]
-      cv2.imshow('Pi Feed',image)
-      if prob>0.6: 
+      img1 = cv2.imread('black.bmp')
+      psnr = cv2.PSNR(img1,image)
+      # ~ print(psnr)
+      if prob>0.6 and psnr>5.0: 
         print( '%s %.2f\n' % (labels[label_id], prob))
+        if labels[label_id]=="dynamic":
+          img = np.uint8(image)
+          gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+          # calculate moments of binary image
+          M = cv2.moments(gray_image)
+
+          # calculate x,y coordinate of center
+          cX = int(M["m10"] / M["m00"])
+          cY = int(M["m01"] / M["m00"])
+
+          # put text and highlight the center
+          cv2.circle(img, (cX, cY), 2, (255,0,0), -1)
+      cv2.imshow('Pi Feed',image)
   except AttributeError:
     pass
     

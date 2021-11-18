@@ -6,9 +6,9 @@ import tensorflow as tf
 import numpy as np
 from capture_image import capture
 import time
-path='labels.txt'
-model_path="models/alexnet/model.tflite"
-IMAGE_PATH ='/home/pi/Documents/pylepton/images/5.step/index/1.2.bmp'
+path='alex.txt'
+model_path="models/lenet/model4.1.tflite"
+IMAGE_PATH ='/home/pi/Desktop/pylepton/images/6.step/open1.[6.].bmp'
 
 def load_labels(path):
   """Loads the labels file. Supports files with or without index numbers."""
