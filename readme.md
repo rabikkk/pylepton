@@ -123,6 +123,7 @@ def detect_objects(interpreter, image, threshold):
 [Youtube kanalı-Tensorflow Object Detection in 5 Hours with Python | Full Course with 3 Projects](https://www.youtube.com/watch?v=yqkISICHH-U)
 
 --> [Object Detection Training — Preparing your custom dataset](https://medium.com/deepquestai/object-detection-training-preparing-your-custom-dataset-6248679f0d1d)
+
 [record to video on Raspberry_pi with python](http://www.learningaboutelectronics.com/Articles/How-to-record-video-Python-OpenCV.php)
     
     
