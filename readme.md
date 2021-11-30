@@ -1,69 +1,129 @@
-# pylepton
+# pylepton Library
 
-Quick and dirty pure python library for capturing images from the Lepton over SPI (for example, on a Raspberry PI).
+# FLIR_LEPTON_Raspberry_Pi
 
-Requires `cv2` and `numpy` modules, if you don't have them already. On a Debian-based system you can probably do this:
+## Kullanılan Önemli siteler
 
-    $ sudo apt-get install python-opencv python-numpy
+Görüntü alma --> [pylepton](https://github.com/groupgets/pylepton.git)
 
-You can run the examples in the working directory, but a distutils setup is included to install into site-packages for distribution:
+##  Görüntü Alma Kod içerikleri
 
-    $ sudo python setup.py install
+-- [frame_learn.py]() :Alınan görüntünün frame hızını vermektedir.
 
-## Example usage
+-- [background_subtruct.py](): Opencv ile arka plan çıkartılması sağlanmıştır.
 
-    import numpy as np
-    import cv2
-    from pylepton import Lepton
+-- [capture_image.py]() :Görüntünün alınması kütüphane haline getirilmiştir. 
 
-    with Lepton() as l:
-      a,_ = l.capture()
-    cv2.normalize(a, a, 0, 65535, cv2.NORM_MINMAX) # extend contrast
-    np.right_shift(a, 8, a) # fit data into 8 bits
-    cv2.imwrite("output.jpg", np.uint8(a)) # write it!
+multithresh uygulanmıştır!!
 
-Image data from `capture()` is 12-bit, non-normalized (raw sensor data). Here we contrast extend it since the bandwidth tends to be narrow.
+```
+import numpy as np
+import cv2
+from pylepton import Lepton
+import time
+import capture_image as cap
 
-`capture()` returns a tuple that includes a unique frame ID, as lepton frames can update at ~27 Hz, but only unique ones are returned at ~9 Hz. Currently, this is just a simple sum, but ideally this will turn into a real frame ID from telemetry once this feature is implemented.
+image=np.zeros((640,480,3))
 
-Note also that the Lepton contructor can take as an optional argument the SPI device on which to find the Lepton. If in your system that device is `/dev/spidev0.1`, you can instantiate lepton as such:
+while (1):
+	image=cap.capture()
+	print(image.shape)
+		#show image
+	cv2.imshow('Example - Show image in window',image)	
+	if cv2.waitKey(1) & 0xFF == ord('q'):
+		break 
+cv2.waitKey(0) # waits until a key is pressed
+cv2.destroyAllWindows() # destroys the window showing image
+```
 
-    ...
-    with Lepton("/dev/spidev0.1") as l:
-      ...
+-- [deneme.py]() : kütüphane denemesidir.
 
-## Example programs
+--[image_save.py]() : görüntüleri kaydetme için yazılmıştır.
 
-### pylepton_overlay
+-- [multi_thresh.py]() :multi thresh uygulanmıştır.
 
-Requires `python-picamera`, a Raspberry PI, and compatible camera such as http://www.adafruit.com/products/1367
+# NOT!!!
 
-    $ sudo apt-get install python-picamera
+## perform ffc'nin c'den python'a entegre edilmesi:
 
-    $ pylepton_overlay --help
-    Usage: pylepton_overlay [options]
 
-    Options:
-      -h, --help            show this help message and exit
-      -f, --flip-vertical   flip the output images vertically
-      -a ALPHA, --alpha=ALPHA
-                            set lepton overlay opacity
+`cd pylepton/leptonSDKEmb32PUB`
 
-To get a 100% lepton overlay (note camera installation still required):
+Lepton_I2C.c ve Lepton_I2C.h dosyalarını bu klasörün içine aktarınız.
 
-    $ pylepton_overlay -a 255
+`gcc -Wall -fPIC -c Lepton.I2C.c LEPTON_SDK.c LEPTON_SYS.c LEPTON_I2C_Protocol. c LEPTON_I2C_Service.c LEPTON_OEM.c
+raspi_I2C.c crc16fast.c LEPTON_VID.c`
 
-### pylepton_capture
+`gcc -shared -Wl,-soname,libLepton_SDK.so.1 -o libLepton_SDK.so Lepton_I2C.o LEPTON_I2C_Protocol.o LEPTON_I2C_Service.o LEPTON_OEM.o raspi_I2C.o LEPTON_SYS.o crc16fast.o LEPTON_VID.o LEPTON_SDK.o`
 
-Note that this program will output any image format that opencv knows about, just specify the output file format extension (e.g. `output.jpg` or `output.png`)
+daha sonra ffc çağırdığınız dosyanın içine bu kod parçacığını ekleyin.
 
-    $ pylepton_capture --help
-    Usage: pylepton_capture [options] output_file[.format]
+```
+import ctypes
+ffc = ctypes.cdll.LoadLibrary("/home/pi/Documents/pylepton/leptonSDKEmb32PUB/libLepton_SDK.so")
+```
+```
+if ffc_counter==0:
+	ffc.lepton_perform_ffc()
+	ffc_counter+=1
+	print("perform ffc")
+```
+[KAYNAK](https://groups.google.com/g/flir-lepton/c/i8rq6g7wZuQ)
+## Deep learning Model Kodları
 
-    Options:
-      -h, --help           show this help message and exit
-      -f, --flip-vertical  flip the output image vertically
+--[label.txt](): classların adının yazıldığı dosyalardır.
 
-To capture a png file named `output.png`:
+```
+open
+close
+last
 
-    $ pylepton_capture output.png
+```
+--[detect.tftlite](): Bilgisayarda öğretilen  modelin tflite dönüşmüş halidir.
+
+--[detect.py](): modelin çalıştırıldığ koddur.
+
+## Gereksinimler:
+İndirilmesi gerekenler:
+
+```
+pip3 install opencv-python 
+sudo apt-get install libcblas-dev
+sudo apt-get install libhdf5-dev
+sudo apt-get install libhdf5-serial-dev
+sudo apt-get install libatlas-base-dev
+sudo apt-get install libjasper-dev 
+sudo apt-get install libqtgui4 
+sudo apt-get install libqt4-testv
+echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install python3-tflite-runtime
+
+```
+## Alınan Hata:
+Yardım alınan [Repo'da](https://github.com/nicknochnack/TFODRPi) bu kısımlar sırayla 0-1-2-3 diye gitmektedir fakat benim oluşturduğum [detect.tftlite]() dosyası bu sıralamayla datayı oluşturmamıştır. 
+
+```
+def detect_objects(interpreter, image, threshold):
+  """Returns a list of detection results, each a dictionary of object info."""
+  set_input_tensor(interpreter, image)
+  interpreter.invoke()
+  # ~ image.astype(int)
+  # Get all output details
+  boxes = get_output_tensor(interpreter, 1)
+  classes = get_output_tensor(interpreter, 3)
+  scores = get_output_tensor(interpreter, 0)
+  count = np.int(get_output_tensor(interpreter, 2))
+
+```
+## KAYNAKLAR
+[Tensorflow Object Detection Walkthrough with Raspberry Pi](https://github.com/nicknochnack/TFODRPi)
+
+[Youtube kanalı-Tensorflow Object Detection in 5 Hours with Python | Full Course with 3 Projects](https://www.youtube.com/watch?v=yqkISICHH-U)
+
+[Object Detection Training — Preparing your custom dataset](https://medium.com/deepquestai/object-detection-training-preparing-your-custom-dataset-6248679f0d1d)
+
+[record to video on Raspberry_pi with python](http://www.learningaboutelectronics.com/Articles/How-to-record-video-Python-OpenCV.php)
+    
+    
