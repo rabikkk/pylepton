@@ -11,7 +11,8 @@ index=9
 width=64
 height= 64
 
-writer= cv2.VideoWriter('images/basicvideo.mp4', cv2.VideoWriter_fourcc(*'DIVX'), 8, (width,height))
+writer= cv2.VideoWriter('images/sevde.mp4', cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
+#writer= cv2.VideoWriter('images/onur-abey.mp4', cv2.VideoWriter_fourcc(*'DIVX'), 8, (width,height))
 
 while True:
 	image=cap.capture()
