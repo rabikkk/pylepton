@@ -5,12 +5,13 @@ import time
 #import capture_image as cap
 import ctypes
 import compare as cap
+import capture_image as cap
 ffc = ctypes.cdll.LoadLibrary("/home/pi/Documents/pylepton/leptonSDKEmb32PUB/libLepton_SDK.so")
 image=np.zeros((64,64))
 
 
 while (1):
-	image=cap.capture()
+	image=cap.step()
 	try:
 		detect=cv2.waitKey(1) & 0xFF	
 		print(image.shape)
